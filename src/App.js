@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { AuthContext } from "./context/context";
 import Login from "./screens/Login";
 import Dashboard from "./screens/Dashboard";
@@ -20,20 +20,22 @@ export default function App() {
     setIsLoggedIn(true);
   };
 
-  const logout = async () => {
-    const logoutResponse = await axios.post("/users/logout");
-    if (logoutResponse.status === 500) {
+  const signUp = async (name, email, password) => {
+    const loginResponse = await axios.post("/users", { name, email, password });
+    console.log(loginResponse);
+    if (loginResponse.status !== 200) {
       return setError("Something went wrong");
     }
-    setIsLoggedIn(false);
+    setUserToken(loginResponse.data.token);
+    setIsLoggedIn(true);
   };
 
   return (
     <AuthContext.Provider
       value={{
-        isLoggedIn: isLoggedIn,
-        login: login,
-        logout: logout,
+        isLoggedIn,
+        login,
+        signUp,
         token: userToken,
       }}
     >
