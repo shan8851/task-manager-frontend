@@ -2,7 +2,7 @@
   "name": "task-manager-app",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5000/",
+  "proxy": "https://shan-task-manager.herokuapp.com",
   "dependencies": {
     "@reach/router": "^1.3.4",
     "@testing-library/jest-dom": "^4.2.4",

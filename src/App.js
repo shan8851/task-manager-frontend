@@ -11,10 +11,7 @@ export default function App() {
   const [userToken, setUserToken] = useState("");
 
   const login = async (email, password) => {
-    const loginResponse = await axios.post(
-      "https://shan-task-manager.herokuapp.com/users/login",
-      { email, password }
-    );
+    const loginResponse = await axios.post("/users/login", { email, password });
     console.log(loginResponse);
     if (loginResponse.status !== 200) {
       return setError("Something went wrong");
@@ -24,9 +21,7 @@ export default function App() {
   };
 
   const logout = async () => {
-    const logoutResponse = await axios.post(
-      "https://shan-task-manager.herokuapp.com/users/logout"
-    );
+    const logoutResponse = await axios.post("/users/logout");
     if (logoutResponse.status === 500) {
       return setError("Something went wrong");
     }

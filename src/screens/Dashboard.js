@@ -20,14 +20,11 @@ export default function Dashboard() {
   }, []);
 
   const fetchTasks = async () => {
-    const taskResponse = await axios.get(
-      "https://shan-task-manager.herokuapp.com/tasks",
-      {
-        headers: {
-          Authorization: "Bearer " + authContext.token,
-        },
-      }
-    );
+    const taskResponse = await axios.get("/tasks", {
+      headers: {
+        Authorization: "Bearer " + authContext.token,
+      },
+    });
     try {
       console.log(taskResponse.data);
       setTaskList(taskResponse.data);
@@ -37,14 +34,11 @@ export default function Dashboard() {
   };
 
   const fetchUser = async () => {
-    const userResponse = await axios.get(
-      "https://shan-task-manager.herokuapp.com/users/me",
-      {
-        headers: {
-          Authorization: "Bearer " + authContext.token,
-        },
-      }
-    );
+    const userResponse = await axios.get("/users/me", {
+      headers: {
+        Authorization: "Bearer " + authContext.token,
+      },
+    });
     try {
       setName(userResponse.data.name);
       setMemberSince(userResponse.data.createdAt);
@@ -55,7 +49,7 @@ export default function Dashboard() {
   };
 
   const logoutHandler = async () => {
-    await axios.post("https://shan-task-manager.herokuapp.com/users/logout", {
+    await axios.post("/users/logout", {
       headers: {
         Authorization: "Bearer " + authContext.token,
       },
@@ -64,7 +58,7 @@ export default function Dashboard() {
 
   const handleAddNewTask = async () => {
     await axios.post(
-      "https://shan-task-manager.herokuapp.com/tasks",
+      "/tasks",
       {
         description: newTask,
       },
@@ -82,7 +76,7 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`https://shan-task-manager.herokuapp.com/tasks/${id}`, {
+    await axios.delete(`/tasks/${id}`, {
       headers: {
         Authorization: "Bearer " + authContext.token,
       },
@@ -92,7 +86,7 @@ export default function Dashboard() {
 
   const handleStatus = async (id, status) => {
     await axios.patch(
-      `https://shan-task-manager.herokuapp.com/tasks/${id}`,
+      `/tasks/${id}`,
       {
         completed: !status,
       },
