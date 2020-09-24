@@ -4,6 +4,8 @@ import Layout from "../components/Layout";
 import axios from "axios";
 import moment from "moment";
 import TaskCard from "../components/TaskCard";
+import styled from "styled-components";
+import NewTask from "../components/NewTask";
 
 export default function Dashboard() {
   const authContext = useContext(AuthContext);
@@ -11,7 +13,6 @@ export default function Dashboard() {
   const [name, setName] = useState("");
   const [memberSince, setMemberSince] = useState("");
   const [taskList, setTaskList] = useState([]);
-  const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
     console.log(authContext);
@@ -20,7 +21,7 @@ export default function Dashboard() {
   }, []);
 
   const fetchTasks = async () => {
-    const taskResponse = await axios.get("/tasks", {
+    const taskResponse = await axios.get("/tasks?sortBy=completed:asc", {
       headers: {
         Authorization: "Bearer " + authContext.token,
       },
@@ -56,7 +57,7 @@ export default function Dashboard() {
     });
   };
 
-  const handleAddNewTask = async () => {
+  const handleAddNewTask = async (newTask) => {
     await axios.post(
       "/tasks",
       {
@@ -104,33 +105,89 @@ export default function Dashboard() {
   return (
     authContext.isLoggedIn && (
       <Layout>
-        <h1>Dashboard</h1>
-        <p>
-          Hello {name}, you have been a member since{" "}
-          {moment(memberSince).format("MMMM Do YYYY")}. Please see below for
-          your tasks.
-        </p>
-        <h3>Add new task</h3>
-        <input
-          type="text"
-          placeholder="Enter task..."
-          onChange={(e) => setNewTask(e.target.value)}
-        />
-        <button onClick={handleAddNewTask}>Add It!</button>
-        <h3>Tasks</h3>
-        {taskList.length === 0 && <h1>You are all done</h1>}
-        {taskList.map((task, index) => (
-          <TaskCard
-            key={index}
-            {...task}
-            handleDelete={handleDelete}
-            handleStatus={handleStatus}
-          />
-        ))}
-        <button className="logout" onClick={logoutHandler}>
-          Logout
-        </button>
+        <Container>
+          <Heading>Dashboard</Heading>
+          <UserInfo>
+            Hello {name}, you have been a member since{" "}
+            {moment(memberSince).format("MMMM Do YYYY")}. Please see below for
+            your tasks.
+          </UserInfo>
+          <Subheading>Add new task</Subheading>
+          <NewTask handleAddNewTask={handleAddNewTask} />
+          <Subheading>Tasks</Subheading>
+          {taskList.length === 0 && (
+            <NoTaskText>Congrats, you have no tasks remaining</NoTaskText>
+          )}
+          <Grid>
+            {taskList.map((task, index) => (
+              <TaskCard
+                key={index}
+                {...task}
+                handleDelete={handleDelete}
+                handleStatus={handleStatus}
+              />
+            ))}
+          </Grid>
+          <LogoutButton className="logout" onClick={logoutHandler}>
+            Logout
+          </LogoutButton>
+        </Container>
       </Layout>
     )
   );
 }
+
+const Container = styled.div`
+  margin: 24px 48px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+`;
+
+const Grid = styled.div`
+  display: flex;
+  width: 90vw;
+  flex-wrap: wrap;
+  margin: auto;
+  justify-content: center;
+`;
+
+const Heading = styled.div`
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 900;
+`;
+
+const Subheading = styled.div`
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 700;
+`;
+
+const UserInfo = styled.p`
+  font-size: 1.2rem;
+  font-style: italic;
+  margin: 20px 0;
+  text-align: center;
+`;
+
+const LogoutButton = styled.button`
+  width: 100%;
+  color: white;
+  background-color: #214e34;
+  padding: 10px 15px;
+  border: none;
+  font-weight: bold;
+  font-size: 18px;
+  margin-top: 10px;
+  border-radius: 16px;
+`;
+
+const NoTaskText = styled.h1`
+  color: #214e34;
+  font-weight: 900;
+  text-align: center;
+  margin: 20px 0;
+`;

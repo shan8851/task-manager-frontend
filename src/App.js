@@ -1,33 +1,47 @@
 import React, { useState } from "react";
 import { AuthContext } from "./context/context";
-import Login from "./screens/Login";
+import Home from "./screens/Home";
 import Dashboard from "./screens/Dashboard";
-import styled from "styled-components";
 import axios from "axios";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [error, setError] = useState(null);
+  const [loginError, setLoginError] = useState(null);
+  const [signupError, setSignupError] = useState(null);
   const [userToken, setUserToken] = useState("");
 
   const login = async (email, password) => {
-    const loginResponse = await axios.post("/users/login", { email, password });
-    console.log(loginResponse);
-    if (loginResponse.status !== 200) {
-      return setError("Something went wrong");
-    }
-    setUserToken(loginResponse.data.token);
-    setIsLoggedIn(true);
+    await axios
+      .post("/users/login", { email, password })
+      .then((res) => {
+        setUserToken(res.data.token);
+        setIsLoggedIn(true);
+      })
+      .catch((error) => {
+        if (error.response) {
+          if (error.response.status === 400) {
+            console.log("status", error.response.status);
+            setLoginError("Something went wrong");
+          }
+        }
+      });
   };
 
   const signUp = async (name, email, password) => {
-    const loginResponse = await axios.post("/users", { name, email, password });
-    console.log(loginResponse);
-    if (loginResponse.status !== 200) {
-      return setError("Something went wrong");
-    }
-    setUserToken(loginResponse.data.token);
-    setIsLoggedIn(true);
+    await axios
+      .post("/users", { name, email, password })
+      .then((res) => {
+        setUserToken(res.data.token);
+        setIsLoggedIn(true);
+      })
+      .catch((error) => {
+        if (error.response) {
+          if (error.response.status === 400) {
+            console.log("status", error.response.status);
+            setSignupError("Something went wrong");
+          }
+        }
+      });
   };
 
   return (
@@ -39,14 +53,11 @@ export default function App() {
         token: userToken,
       }}
     >
-      {isLoggedIn ? <Dashboard /> : <Login />}
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {isLoggedIn ? (
+        <Dashboard />
+      ) : (
+        <Home loginError={loginError} signupError={signupError} />
+      )}
     </AuthContext.Provider>
   );
 }
-
-const ErrorMessage = styled.p`
-  font-size: 1.2rem;
-  color: red;
-  font-weight: bold;
-`;
