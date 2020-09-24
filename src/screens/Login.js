@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Link, useNavigate } from "@reach/router";
 import axios from "axios";
 
-export default function Login() {
+export default function Login(props) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,8 +14,8 @@ export default function Login() {
     await axios
       .post("/users/login", { email, password })
       .then((res) => {
-        console.log(res);
         localStorage.setItem("userToken", res.data.token);
+        props.createUser(res.data.user);
         navigate("/");
       })
       .catch((error) => {

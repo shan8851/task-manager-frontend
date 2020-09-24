@@ -6,7 +6,7 @@ import styled from "styled-components";
 import NewTask from "../components/NewTask";
 import { useNavigate } from "@reach/router";
 
-export default function Dashboard() {
+export default function Dashboard(props) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
@@ -15,8 +15,7 @@ export default function Dashboard() {
   const token = localStorage.getItem("userToken");
 
   useEffect(() => {
-    fetchUser();
-    fetchTasks();
+    fetchData();
   }, []);
 
   const fetchTasks = async () => {
@@ -33,7 +32,7 @@ export default function Dashboard() {
     }
   };
 
-  const fetchUser = async () => {
+  const fetchData = async () => {
     await axios
       .get("/users/me", {
         headers: {
@@ -43,7 +42,6 @@ export default function Dashboard() {
       .then((res) => {
         setName(res.data.name);
         setMemberSince(res.data.createdAt);
-        setLoading(false);
       })
       .catch((error) => {
         if (error.response) {
@@ -53,14 +51,8 @@ export default function Dashboard() {
           }
         }
       });
-  };
-
-  const logoutHandler = async () => {
-    await axios.post("/users/logout", {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    });
+    await fetchTasks();
+    setLoading(false);
   };
 
   const handleAddNewTask = async (newTask) => {
@@ -132,9 +124,6 @@ export default function Dashboard() {
           />
         ))}
       </Grid>
-      <LogoutButton className="logout" onClick={logoutHandler}>
-        Logout
-      </LogoutButton>
     </Container>
   );
 }
@@ -173,18 +162,6 @@ const UserInfo = styled.p`
   font-style: italic;
   margin: 20px 0;
   text-align: center;
-`;
-
-const LogoutButton = styled.button`
-  width: 100%;
-  color: white;
-  background-color: #214e34;
-  padding: 10px 15px;
-  border: none;
-  font-weight: bold;
-  font-size: 18px;
-  margin-top: 10px;
-  border-radius: 16px;
 `;
 
 const NoTaskText = styled.h1`
