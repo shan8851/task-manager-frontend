@@ -1,9 +1,9 @@
 import React from "react";
-import TopBar from "./TopBar";
+import Nav from "./Nav";
 export default function Layout({ children }) {
   return (
     <div>
-      <TopBar />
+      <Nav />
       {children}
     </div>
   );
