@@ -1,27 +1,36 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
-import { AuthContext } from "../context/context";
+import { Link, useNavigate } from "@reach/router";
+import axios from "axios";
 
-export default function Singup({ error }) {
-  const authContext = useContext(AuthContext);
+export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSignUp = async (e) => {
+  const login = async (e) => {
     e.preventDefault();
-    authContext.signUp(name, email, password);
+    await axios
+      .post("/users/login", { email, password })
+      .then((res) => {
+        console.log(res);
+        localStorage.setItem("userToken", res.data.token);
+        navigate("/");
+      })
+      .catch((error) => {
+        if (error.response) {
+          if (error.response.status === 400) {
+            console.log("status", error.response.status);
+            setError("Something went wrong");
+          }
+        }
+      });
   };
   return (
-    <SignUpContainer>
-      <Heading>Sing Up</Heading>
-      <StyledForm onSubmit={handleSignUp}>
-        <StyledInput
-          type="text"
-          value={name}
-          placeholder="Enter your name"
-          onChange={(e) => setName(e.target.value)}
-        />
+    <LoginContainer>
+      <Heading>Log In</Heading>
+      <StyledForm onSubmit={login}>
         <StyledInput
           type="email"
           value={email}
@@ -37,25 +46,24 @@ export default function Singup({ error }) {
         <Button type="submit">Submit</Button>
         {error && <ErrorMessage>{error}</ErrorMessage>}
       </StyledForm>
-    </SignUpContainer>
+      <SignupLink to="/signup">Sing up instead</SignupLink>
+    </LoginContainer>
   );
 }
 
-const SignUpContainer = styled.div`
-  width: 40%;
+const LoginContainer = styled.div`
   border-radius: 16px;
   border: 3px solid #214e34;
+  margin: 24px 48px;
   padding: 24px 48px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  @media (max-width: 850px) {
-    width: 85%;
-  }
 `;
 
 const Heading = styled.div`
+  color: #214e34;
   font-size: 2rem;
   margin-bottom: 2rem;
   text-align: center;
@@ -68,7 +76,7 @@ const StyledForm = styled.form`
   width: 100%;
 `;
 
-export const StyledInput = styled.input`
+const StyledInput = styled.input`
   padding: 10px 15px;
   margin: 20px 0;
   font-size: 1.2rem;
@@ -92,4 +100,11 @@ const ErrorMessage = styled.p`
   color: red;
   font-weight: bold;
   text-align: center;
+`;
+
+const SignupLink = styled(Link)`
+  color: #214e34;
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin-top: 20px;
 `;

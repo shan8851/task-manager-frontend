@@ -1,21 +1,20 @@
-import React, { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../context/context";
-import Layout from "../components/Layout";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import moment from "moment";
 import TaskCard from "../components/TaskCard";
 import styled from "styled-components";
 import NewTask from "../components/NewTask";
+import { useNavigate } from "@reach/router";
 
 export default function Dashboard() {
-  const authContext = useContext(AuthContext);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [memberSince, setMemberSince] = useState("");
   const [taskList, setTaskList] = useState([]);
+  const token = localStorage.getItem("userToken");
 
   useEffect(() => {
-    console.log(authContext);
     fetchUser();
     fetchTasks();
   }, []);
@@ -23,7 +22,7 @@ export default function Dashboard() {
   const fetchTasks = async () => {
     const taskResponse = await axios.get("/tasks?sortBy=completed:asc", {
       headers: {
-        Authorization: "Bearer " + authContext.token,
+        Authorization: "Bearer " + token,
       },
     });
     try {
@@ -35,24 +34,31 @@ export default function Dashboard() {
   };
 
   const fetchUser = async () => {
-    const userResponse = await axios.get("/users/me", {
-      headers: {
-        Authorization: "Bearer " + authContext.token,
-      },
-    });
-    try {
-      setName(userResponse.data.name);
-      setMemberSince(userResponse.data.createdAt);
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
-    }
+    await axios
+      .get("/users/me", {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
+      .then((res) => {
+        setName(res.data.name);
+        setMemberSince(res.data.createdAt);
+        setLoading(false);
+      })
+      .catch((error) => {
+        if (error.response) {
+          if (error.response.status === 401) {
+            console.log("status", error.response.status);
+            navigate("/login");
+          }
+        }
+      });
   };
 
   const logoutHandler = async () => {
     await axios.post("/users/logout", {
       headers: {
-        Authorization: "Bearer " + authContext.token,
+        Authorization: "Bearer " + token,
       },
     });
   };
@@ -65,7 +71,7 @@ export default function Dashboard() {
       },
       {
         headers: {
-          Authorization: "Bearer " + authContext.token,
+          Authorization: "Bearer " + token,
         },
       }
     );
@@ -79,7 +85,7 @@ export default function Dashboard() {
   const handleDelete = async (id) => {
     await axios.delete(`/tasks/${id}`, {
       headers: {
-        Authorization: "Bearer " + authContext.token,
+        Authorization: "Bearer " + token,
       },
     });
     fetchTasks();
@@ -93,7 +99,7 @@ export default function Dashboard() {
       },
       {
         headers: {
-          Authorization: "Bearer " + authContext.token,
+          Authorization: "Bearer " + token,
         },
       }
     );
@@ -103,37 +109,33 @@ export default function Dashboard() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    authContext.isLoggedIn && (
-      <Layout>
-        <Container>
-          <Heading>Dashboard</Heading>
-          <UserInfo>
-            Hello {name}, you have been a member since{" "}
-            {moment(memberSince).format("MMMM Do YYYY")}. Please see below for
-            your tasks.
-          </UserInfo>
-          <Subheading>Add new task</Subheading>
-          <NewTask handleAddNewTask={handleAddNewTask} />
-          <Subheading>Tasks</Subheading>
-          {taskList.length === 0 && (
-            <NoTaskText>Congrats, you have no tasks remaining</NoTaskText>
-          )}
-          <Grid>
-            {taskList.map((task, index) => (
-              <TaskCard
-                key={index}
-                {...task}
-                handleDelete={handleDelete}
-                handleStatus={handleStatus}
-              />
-            ))}
-          </Grid>
-          <LogoutButton className="logout" onClick={logoutHandler}>
-            Logout
-          </LogoutButton>
-        </Container>
-      </Layout>
-    )
+    <Container>
+      <Heading>Dashboard</Heading>
+      <UserInfo>
+        Hello {name}, you have been a member since{" "}
+        {moment(memberSince).format("MMMM Do YYYY")}. Please see below for your
+        tasks.
+      </UserInfo>
+      <Subheading>Add new task</Subheading>
+      <NewTask handleAddNewTask={handleAddNewTask} />
+      <Subheading>Tasks</Subheading>
+      {taskList.length === 0 && (
+        <NoTaskText>Congrats, you have no tasks remaining</NoTaskText>
+      )}
+      <Grid>
+        {taskList.map((task, index) => (
+          <TaskCard
+            key={index}
+            {...task}
+            handleDelete={handleDelete}
+            handleStatus={handleStatus}
+          />
+        ))}
+      </Grid>
+      <LogoutButton className="logout" onClick={logoutHandler}>
+        Logout
+      </LogoutButton>
+    </Container>
   );
 }
 
